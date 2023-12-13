@@ -1,6 +1,8 @@
 package example.cashcard.repositories;
+
 import example.cashcard.CashCard;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  * CrudRepository is an interface supplied by Spring Data.
@@ -10,6 +12,6 @@ import org.springframework.data.repository.CrudRepository;
  */
 
 
-public interface CashCardRepository extends CrudRepository<CashCard, Long>  {
+public interface CashCardRepository extends CrudRepository<CashCard, Long>, PagingAndSortingRepository<CashCard, Long> {
 
 }
