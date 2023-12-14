@@ -1,5 +1,6 @@
 package example.cashcard;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,8 +18,10 @@ import java.util.List;
 @RequestMapping("/cashcards")  //This is a companion to @RestController that indicates which address requests must have to access this Controller.
 class CashCardController {
 
+
     private final CashCardRepository cashCardRepository;
 
+    @Autowired
     private CashCardController(CashCardRepository cashCardRepository) {
         this.cashCardRepository = cashCardRepository;
     }
@@ -31,8 +34,8 @@ class CashCardController {
      * GET requests that match cashcards/{requestedID} will be handled by this method.
      */
 
-    @GetMapping("/requestedId")
-    private ResponseEntity<CashCard> findById(@PathVariable Long requestedId, Principal principal) {
+    @GetMapping("/{requestedId}")
+    private ResponseEntity<CashCard> findById(@PathVariable("requestedId") Long requestedId, Principal principal) {
         CashCard cashCard = findCashCard(requestedId, principal);
         if (cashCard != null) {
             return ResponseEntity.ok(cashCard);
@@ -64,8 +67,6 @@ class CashCardController {
      * CrudRepository.findAll(). Our implementing Repository, CashCardRepository,
      * will automatically return all CashCard records from the database when findAll() is invoked.
      */
-
-
     @GetMapping
     private ResponseEntity<List<CashCard>> findAll(Pageable pageable, Principal principal) {
         Page<CashCard> page = cashCardRepository.findByOwner(principal.getName(),
@@ -82,8 +83,8 @@ class CashCardController {
      * The @RequestBody contains the updated CashCard data.
      * Return an HTTP 204 NO_CONTENT response code for now, just to get started.
      */
-    @PutMapping("/requestedId")
-    private ResponseEntity<Void> putCashCard(@PathVariable Long requestedId, @RequestBody CashCard cashCardUpdate, Principal principal) {
+    @PutMapping("/{requestedId}")
+    private ResponseEntity<Void> putCashCard(@PathVariable("requestedId") Long requestedId, @RequestBody CashCard cashCardUpdate, Principal principal) {
         CashCard cashCard = findCashCard(requestedId, principal);
         if (cashCard != null) {
             CashCard updatedCashCard = new CashCard(cashCard.id(), cashCardUpdate.amount(), principal.getName());
@@ -93,8 +94,18 @@ class CashCardController {
         return ResponseEntity.notFound().build();
     }
 
+//    Auxiliary method
     private CashCard findCashCard(Long requestedId, Principal principal) {
         return cashCardRepository.findByIdAndOwner(requestedId, principal.getName());
+    }
+
+    @DeleteMapping("/{id}")
+    private ResponseEntity<Void> deleteCashCard(@PathVariable("id") Long id, Principal principal) {
+        if (cashCardRepository.existsByIdAndOwner(id, principal.getName())) {
+            cashCardRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
 
